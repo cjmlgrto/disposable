@@ -10,6 +10,7 @@ import UIKit
 
 struct ContentView: View {
     @StateObject private var camera = CameraController()
+    @State private var animateKick = false
 
     var body: some View {
         ZStack {
@@ -31,6 +32,20 @@ struct ContentView: View {
                 Text("\(camera.remainingShots)")
                     .font(.system(size: 48, weight: .bold, design: .monospaced))
                     .foregroundStyle(.yellow)
+                    // Smooth numeric morphing on supported platforms
+                    .modifier(NumericTextTransition(value: camera.remainingShots))
+                    // Subtle emphasis animation each time the value changes
+                    .scaleEffect(animateKick ? 1.1 : 1.0)
+                    .opacity(animateKick ? 0.9 : 1.0)
+                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateKick)
+                    .onChange(of: camera.remainingShots) { _, _ in
+                        // Kick the emphasis animation
+                        animateKick = true
+                        // Reset shortly after to allow retriggering
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            animateKick = false
+                        }
+                    }
 
                 Spacer()
 
@@ -57,6 +72,20 @@ struct ContentView: View {
         }
         .alert(camera.errorMessage ?? "", isPresented: .constant(camera.errorMessage != nil)) {
             Button("OK") { camera.errorMessage = nil }
+        }
+    }
+}
+
+// Helper view modifier to use numericText content transition when available
+private struct NumericTextTransition: ViewModifier {
+    let value: Int
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .contentTransition(.numericText(value: Double(value)))
+                .animation(.easeInOut(duration: 0.25), value: value)
+        } else {
+            content
         }
     }
 }
