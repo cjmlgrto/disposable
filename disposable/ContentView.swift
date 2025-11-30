@@ -12,7 +12,8 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            CameraView(session: camera.session)
+            // No live preview; keep a simple dark background.
+            Color.black.ignoresSafeArea()
 
             VStack {
                 // Counter display
@@ -37,7 +38,6 @@ struct ContentView: View {
             }
             .padding()
         }
-        .background(Color.black.ignoresSafeArea())
         .task {
             await camera.start()
         }
