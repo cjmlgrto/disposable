@@ -17,20 +17,20 @@ struct ContentView: View {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 8) {
+                Spacer()
+                
                 // Session name display
                 Text(camera.sessionName.isEmpty ? "Untitled" : camera.sessionName)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .shadow(color: .black.opacity(0.6), radius: 4, x: 0, y: 2)
+                    .font(.system(size: 20, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.yellow)
                     .padding(.top, 24)
                     .accessibilityLabel("Session name")
                     .accessibilityValue(camera.sessionName.isEmpty ? "Untitled" : camera.sessionName)
 
                 // Counter display
                 Text("\(camera.remainingShots)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.6), radius: 4, x: 0, y: 2)
+                    .font(.system(size: 48, weight: .bold, design: .monospaced))
+                    .foregroundStyle(.yellow)
 
                 Spacer()
 

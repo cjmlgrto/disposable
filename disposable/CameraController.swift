@@ -166,13 +166,14 @@ final class CameraController: NSObject, ObservableObject {
     private func addWatermark(to image: UIImage, text: String) -> UIImage {
         // Choose a font size relative to image width for scalability
         let baseFontSize = max(24, image.size.width * 0.03)
-        let font = UIFont.systemFont(ofSize: baseFontSize, weight: .semibold)
+        let font = UIFont.monospacedSystemFont(ofSize: baseFontSize, weight: .semibold)
+//        let font = UIFont.systemFont(ofSize: baseFontSize, weight: .semibold)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .right
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: UIColor.white,
+            .foregroundColor: UIColor.yellow,
             .paragraphStyle: paragraph
         ]
 
