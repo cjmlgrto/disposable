@@ -15,7 +15,15 @@ struct ContentView: View {
             CameraView(session: camera.session)
 
             VStack {
+                // Counter display
+                Text("\(camera.remainingShots)")
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.6), radius: 4, x: 0, y: 2)
+                    .padding(.top, 24)
+
                 Spacer()
+
                 Button {
                     camera.capturePhoto()
                 } label: {
@@ -27,6 +35,7 @@ struct ContentView: View {
                 }
                 .accessibilityLabel("Shutter")
             }
+            .padding()
         }
         .background(Color.black.ignoresSafeArea())
         .task {

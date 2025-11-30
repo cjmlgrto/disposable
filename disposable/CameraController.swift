@@ -12,6 +12,26 @@ final class CameraController: NSObject, ObservableObject {
 
     @Published var errorMessage: String?
 
+    // Persistent countdown
+    @Published var remainingShots: Int {
+        didSet {
+            UserDefaults.standard.set(remainingShots, forKey: Self.remainingShotsKey)
+        }
+    }
+
+    private static let remainingShotsKey = "remainingShots"
+    private static let maxShots = 24
+
+    override init() {
+        let stored = UserDefaults.standard.object(forKey: Self.remainingShotsKey) as? Int
+        self.remainingShots = stored ?? Self.maxShots
+        super.init()
+        // Normalize any invalid stored values
+        if remainingShots <= 0 || remainingShots > Self.maxShots {
+            remainingShots = Self.maxShots
+        }
+    }
+
     func start() async {
         let authorized = await requestPermissions()
         guard authorized else {
@@ -28,6 +48,11 @@ final class CameraController: NSObject, ObservableObject {
     }
 
     func capturePhoto() {
+        // If we've hit zero, reset before capturing to maintain the disposable-like behavior
+        if remainingShots == 0 {
+            remainingShots = Self.maxShots
+        }
+
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .auto
         photoOutput.capturePhoto(with: settings, delegate: self)
@@ -85,6 +110,19 @@ final class CameraController: NSObject, ObservableObject {
             DispatchQueue.main.async {
                 if let error = error {
                     self.errorMessage = "Save failed: \(error.localizedDescription)"
+                    return
+                }
+                if success {
+                    // Decrement only on successful save
+                    if self.remainingShots > 0 {
+                        self.remainingShots -= 1
+                    }
+                    // Auto-reset when reaching zero so the next shot starts a fresh roll
+                    if self.remainingShots == 0 {
+                        // Do not immediately reset here if you prefer showing 0 until the next press.
+                        // The requirement says "When it reaches zero, reset it." so we reset now.
+                        self.remainingShots = Self.maxShots
+                    }
                 }
             }
         }
