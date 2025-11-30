@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @StateObject private var camera = CameraController()
@@ -26,6 +27,11 @@ struct ContentView: View {
                 Spacer()
 
                 Button {
+                    // Haptic for shutter press
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.prepare()
+                    impact.impactOccurred()
+
                     camera.capturePhoto()
                 } label: {
                     Circle()
@@ -50,3 +56,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

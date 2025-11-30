@@ -110,9 +110,18 @@ final class CameraController: NSObject, ObservableObject {
             DispatchQueue.main.async {
                 if let error = error {
                     self.errorMessage = "Save failed: \(error.localizedDescription)"
+                    // Optional: error haptic
+                    let notifier = UINotificationFeedbackGenerator()
+                    notifier.prepare()
+                    notifier.notificationOccurred(.error)
                     return
                 }
                 if success {
+                    // Success haptic
+                    let notifier = UINotificationFeedbackGenerator()
+                    notifier.prepare()
+                    notifier.notificationOccurred(.success)
+
                     // Decrement only on successful save
                     if self.remainingShots > 0 {
                         self.remainingShots -= 1
@@ -220,3 +229,4 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         }
     }
 }
+
