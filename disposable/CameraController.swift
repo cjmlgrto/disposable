@@ -127,6 +127,65 @@ final class CameraController: NSObject, ObservableObject {
             }
         }
     }
+
+    // MARK: - Watermarking
+
+    private func watermarkText(for displayCount: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_GB")
+        formatter.dateFormat = "dd-MM-yyyy"
+        let datePart = formatter.string(from: Date())
+        return "\(datePart) \(displayCount) of \(Self.maxShots)"
+    }
+
+    private func addWatermark(to image: UIImage, text: String) -> UIImage {
+        // Choose a font size relative to image width for scalability
+        let baseFontSize = max(24, image.size.width * 0.03)
+        let font = UIFont.systemFont(ofSize: baseFontSize, weight: .semibold)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .right
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor.white,
+            .paragraphStyle: paragraph
+        ]
+
+        let scale = image.scale
+        let rendererFormat = UIGraphicsImageRendererFormat.default()
+        rendererFormat.scale = scale
+        rendererFormat.opaque = true
+        rendererFormat.preferredRange = .standard
+
+        let renderer = UIGraphicsImageRenderer(size: image.size, format: rendererFormat)
+
+        let padded: CGFloat = max(12, image.size.width * 0.02)
+        let shadowOffset = CGSize(width: 0, height: max(1, image.size.height * 0.002))
+        let shadowBlur: CGFloat = max(2, image.size.width * 0.005)
+
+        let result = renderer.image { ctx in
+            // Draw base image
+            image.draw(in: CGRect(origin: .zero, size: image.size))
+
+            // Shadow for legibility
+            ctx.cgContext.setShadow(offset: shadowOffset, blur: shadowBlur, color: UIColor.black.withAlphaComponent(0.6).cgColor)
+
+            // Measure text
+            let textSize = (text as NSString).size(withAttributes: attributes)
+
+            // Bottom-right placement with padding
+            let textOrigin = CGPoint(
+                x: image.size.width - textSize.width - padded,
+                y: image.size.height - textSize.height - padded
+            )
+            let textRect = CGRect(origin: textOrigin, size: textSize)
+
+            // Draw text
+            (text as NSString).draw(in: textRect, withAttributes: attributes)
+        }
+
+        return result
+    }
 }
 
 extension CameraController: AVCapturePhotoCaptureDelegate {
@@ -138,6 +197,26 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
             return
         }
         guard let data = photo.fileDataRepresentation() else { return }
-        DispatchQueue.main.async { self.saveToPhotos(data) }
+
+        // Watermark work off the main actor to avoid blocking UI
+        Task.detached { [data] in
+            // Capture the display value before any decrement (current state "X of 24")
+            let displayCount = await MainActor.run { self.remainingShots }
+
+            guard let original = UIImage(data: data) else {
+                await MainActor.run { self.saveToPhotos(data) } // Fallback: save original
+                return
+            }
+
+            let text = await MainActor.run { self.watermarkText(for: displayCount) }
+            let watermarked = await MainActor.run { self.addWatermark(to: original, text: text) }
+
+            // Encode as JPEG with reasonable quality
+            let finalData = watermarked.jpegData(compressionQuality: 0.9) ?? data
+
+            await MainActor.run {
+                self.saveToPhotos(finalData)
+            }
+        }
     }
 }
