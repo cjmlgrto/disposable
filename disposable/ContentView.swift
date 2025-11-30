@@ -16,13 +16,21 @@ struct ContentView: View {
             // No live preview; keep a simple dark background.
             Color.black.ignoresSafeArea()
 
-            VStack {
+            VStack(spacing: 8) {
+                // Session name display
+                Text(camera.sessionName.isEmpty ? "Untitled" : camera.sessionName)
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .shadow(color: .black.opacity(0.6), radius: 4, x: 0, y: 2)
+                    .padding(.top, 24)
+                    .accessibilityLabel("Session name")
+                    .accessibilityValue(camera.sessionName.isEmpty ? "Untitled" : camera.sessionName)
+
                 // Counter display
                 Text("\(camera.remainingShots)")
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.6), radius: 4, x: 0, y: 2)
-                    .padding(.top, 24)
 
                 Spacer()
 
@@ -42,7 +50,7 @@ struct ContentView: View {
                 }
                 .accessibilityLabel("Shutter")
             }
-            .padding()
+            .padding(.horizontal)
         }
         .task {
             await camera.start()
@@ -56,4 +64,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-

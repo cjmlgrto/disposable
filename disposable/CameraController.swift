@@ -19,16 +19,29 @@ final class CameraController: NSObject, ObservableObject {
         }
     }
 
+    // Persistent session name
+    @Published var sessionName: String {
+        didSet {
+            UserDefaults.standard.set(sessionName, forKey: Self.sessionNameKey)
+        }
+    }
+
     private static let remainingShotsKey = "remainingShots"
+    private static let sessionNameKey = "sessionName"
     private static let maxShots = 24
 
     override init() {
-        let stored = UserDefaults.standard.object(forKey: Self.remainingShotsKey) as? Int
-        self.remainingShots = stored ?? Self.maxShots
+        let storedCount = UserDefaults.standard.object(forKey: Self.remainingShotsKey) as? Int
+        let storedName = UserDefaults.standard.string(forKey: Self.sessionNameKey)
+        self.remainingShots = storedCount ?? Self.maxShots
+        self.sessionName = (storedName?.isEmpty == false) ? storedName! : "Untitled"
         super.init()
         // Normalize any invalid stored values
         if remainingShots <= 0 || remainingShots > Self.maxShots {
             remainingShots = Self.maxShots
+        }
+        if sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            sessionName = "Untitled"
         }
     }
 
@@ -51,6 +64,8 @@ final class CameraController: NSObject, ObservableObject {
         // If we've hit zero, reset before capturing to maintain the disposable-like behavior
         if remainingShots == 0 {
             remainingShots = Self.maxShots
+            // Prompt user to name the new session
+            promptForSessionName()
         }
 
         let settings = AVCapturePhotoSettings()
@@ -128,9 +143,9 @@ final class CameraController: NSObject, ObservableObject {
                     }
                     // Auto-reset when reaching zero so the next shot starts a fresh roll
                     if self.remainingShots == 0 {
-                        // Do not immediately reset here if you prefer showing 0 until the next press.
-                        // The requirement says "When it reaches zero, reset it." so we reset now.
+                        // Reset the counter and prompt for a new session name
                         self.remainingShots = Self.maxShots
+                        self.promptForSessionName()
                     }
                 }
             }
@@ -144,7 +159,8 @@ final class CameraController: NSObject, ObservableObject {
         formatter.locale = Locale(identifier: "en_GB")
         formatter.dateFormat = "dd-MM-yyyy"
         let datePart = formatter.string(from: Date())
-        return "\(datePart) \(displayCount) of \(Self.maxShots)"
+        let name = sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Untitled" : sessionName
+        return "\(name) \(datePart) \(displayCount) of \(Self.maxShots)"
     }
 
     private func addWatermark(to image: UIImage, text: String) -> UIImage {
@@ -195,6 +211,56 @@ final class CameraController: NSObject, ObservableObject {
 
         return result
     }
+
+    // MARK: - Session naming prompt
+
+    private func promptForSessionName() {
+        let alert = UIAlertController(title: "New Session", message: "Name this session", preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.placeholder = "Session name"
+            textField.text = ""
+            textField.returnKeyType = .done
+        }
+
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let entered = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            self.sessionName = entered.isEmpty ? "Untitled" : entered
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.sessionName = "Untitled"
+        }
+
+        alert.addAction(cancelAction)
+        alert.addAction(saveAction)
+
+        // Present from the topmost view controller
+        if let presenter = self.topMostViewController() {
+            presenter.present(alert, animated: true, completion: nil)
+        } else {
+            // Fallback if we cannot find a presenter
+            self.sessionName = "Untitled"
+        }
+    }
+
+    private func topMostViewController(base: UIViewController? = UIApplication.shared.connectedScenes
+        .compactMap { $0 as? UIWindowScene }
+        .flatMap { $0.windows }
+        .first { $0.isKeyWindow }?.rootViewController) -> UIViewController? {
+
+        if let nav = base as? UINavigationController {
+            return topMostViewController(base: nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController {
+            if let selected = tab.selectedViewController {
+                return topMostViewController(base: selected)
+            }
+        }
+        if let presented = base?.presentedViewController {
+            return topMostViewController(base: presented)
+        }
+        return base
+    }
 }
 
 extension CameraController: AVCapturePhotoCaptureDelegate {
@@ -229,4 +295,3 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         }
     }
 }
-
