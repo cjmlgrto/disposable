@@ -12,6 +12,9 @@ final class CameraController: NSObject, ObservableObject {
 
     @Published var errorMessage: String?
 
+    // Flash toggle (default off to behave predictably)
+    @Published var flashEnabled: Bool = false
+
     // Persistent countdown
     @Published var remainingShots: Int {
         didSet {
@@ -69,7 +72,14 @@ final class CameraController: NSObject, ObservableObject {
         }
 
         let settings = AVCapturePhotoSettings()
-        settings.flashMode = .auto
+        // Apply flash mode from toggle
+        if photoOutput.supportedFlashModes.contains(.on), photoOutput.supportedFlashModes.contains(.off) {
+            settings.flashMode = flashEnabled ? .on : .off
+        } else {
+            // Fallback if flash not supported; avoid crashing
+            settings.flashMode = .off
+        }
+
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 
@@ -296,3 +306,4 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         }
     }
 }
+

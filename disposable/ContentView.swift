@@ -18,6 +18,23 @@ struct ContentView: View {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 8) {
+                // Flash toggle
+                Toggle(isOn: $camera.flashEnabled) {
+                    Label {
+                        Text("Flash")
+                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.yellow)
+                    } icon: {
+                        Image(systemName: camera.flashEnabled ? "bolt.fill" : "bolt.slash.fill")
+                            .foregroundStyle(camera.flashEnabled ? .yellow : .gray)
+                    }
+                }
+                .tint(.yellow)
+                .padding(.horizontal)
+                .padding(.top, 32)
+                .accessibilityLabel("Flash")
+                .accessibilityValue(camera.flashEnabled ? "On" : "Off")
+                
                 Spacer()
                 
                 // Session name display
