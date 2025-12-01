@@ -75,10 +75,10 @@ struct ContentView: View {
                     camera.capturePhoto()
                 } label: {
                     Circle()
-                        .strokeBorder(.white, lineWidth: 6)
                         .frame(width: 80, height: 80)
-                        .background(Circle().fill(.white.opacity(0.2)))
-                        .padding(.bottom, 24)
+                        .glassEffect()
+                        .tint(.yellow)
+                        .padding(.bottom, 32)
                 }
                 .accessibilityLabel("Shutter")
             }
