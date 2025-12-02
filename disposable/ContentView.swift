@@ -11,6 +11,8 @@ import UIKit
 struct ContentView: View {
     @StateObject private var camera = CameraController()
     @State private var animateKick = false
+    @State private var showingResetPrompt = false
+    @State private var newSessionName: String = ""
 
     var body: some View {
         ZStack {
@@ -81,6 +83,18 @@ struct ContentView: View {
                         .padding(.bottom, 32)
                 }
                 .accessibilityLabel("Shutter")
+
+                Button {
+                    // Prepare default text for the prompt using current session name
+                    newSessionName = camera.sessionName
+                    showingResetPrompt = true
+                } label: {
+                    Label("Reset", systemImage: "arrow.counterclockwise")
+                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.yellow)
+                        .padding(.bottom, 12)
+                }
+                .accessibilityLabel("Reset session")
             }
             .padding(.horizontal)
         }
@@ -89,6 +103,23 @@ struct ContentView: View {
         }
         .alert(camera.errorMessage ?? "", isPresented: .constant(camera.errorMessage != nil)) {
             Button("OK") { camera.errorMessage = nil }
+        }
+        .alert("Reset Session", isPresented: $showingResetPrompt) {
+            if #available(iOS 17.0, *) {
+                TextField("New session name", text: $newSessionName)
+            }
+            Button("Cancel", role: .cancel) {
+                newSessionName = ""
+            }
+            Button("Confirm") {
+                // Reset the counter and apply the new session name
+                camera.remainingShots = 24
+                let trimmed = newSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+                camera.sessionName = trimmed.isEmpty ? "Untitled" : trimmed
+                newSessionName = ""
+            }
+        } message: {
+            Text("This will reset remaining shots to 24. Enter a new session name.")
         }
     }
 }
