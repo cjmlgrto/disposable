@@ -15,7 +15,6 @@ struct ShutterButtonView: View {
                 .frame(width: 80, height: 80)
                 .glassEffect()
                 .tint(.yellow)
-                .padding(.bottom, 32)
         }
         .accessibilityLabel("Shutter")
     }

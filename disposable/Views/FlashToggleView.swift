@@ -4,19 +4,17 @@ struct FlashToggleView: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        Toggle(isOn: $isOn) {
-            Label {
+        Button(action: { isOn.toggle() }) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(isOn ? Color.green : Color.red)
+                    .frame(width: 12, height: 12)
                 Text("Flash")
                     .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.yellow)
-            } icon: {
-                Image(systemName: isOn ? "bolt.fill" : "bolt.slash.fill")
-                    .foregroundStyle(isOn ? .yellow : .gray)
+                    .foregroundStyle(.primary)
             }
         }
-        .tint(.yellow)
-        .padding(.horizontal)
-        .padding(.top, 32)
+        .buttonStyle(.plain)
         .accessibilityLabel("Flash")
         .accessibilityValue(isOn ? "On" : "Off")
     }

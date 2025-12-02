@@ -15,29 +15,48 @@ struct ContentView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            VStack(spacing: 8) {
-                // Flash toggle
-                FlashToggleView(isOn: $camera.flashEnabled)
+            VStack {
+                HStack() {
+                    // Reset button
+                    ResetButtonView(sessionName: $camera.sessionName, remainingShots: $camera.remainingShots, defaultShotCount: 24)
+                        .padding(24)
 
-                Spacer()
-
-                // Session name display
-                SessionNameView(name: camera.sessionName)
-
-                // Counter display
-                CounterView(value: camera.remainingShots)
-
-                Spacer()
-
-                // Shutter button
-                ShutterButtonView {
-                    camera.capturePhoto()
+                    // Fixed spacing between reset and flash
+                    Spacer()
+                    
+                    // Flash toggle
+                    FlashToggleView(isOn: $camera.flashEnabled)
+                        .padding(24)
                 }
+                .background(Color.blue.opacity(0.15))
 
-                // Reset button
-                ResetButtonView(sessionName: $camera.sessionName, remainingShots: $camera.remainingShots, defaultShotCount: 24)
+                Spacer()
+                
+                VStack(spacing: 24) {
+                    // Counter display
+                    CounterView(value: camera.remainingShots)
+                    
+                    // Session name display
+                    SessionNameView(name: camera.sessionName)
+                }
+                .background(Color.orange.opacity(0.15))
+
+                Spacer()
+                
+                HStack() {
+                    // Shutter button
+                    ShutterButtonView {
+                        camera.capturePhoto()
+                    }
+                    .padding(24)
+                }
+                .frame(maxWidth: .infinity)
+                .background(Color.purple.opacity(0.15))
             }
-            .padding(.horizontal)
+            .background(Color.red.opacity(0.15))
+            .padding(16)
+            .safeAreaPadding(.top)
+            
         }
         .task {
             await camera.start()

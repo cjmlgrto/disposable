@@ -16,7 +16,6 @@ struct ResetButtonView: View {
             Label("Reset", systemImage: "arrow.counterclockwise")
                 .font(.system(size: 16, weight: .semibold, design: .monospaced))
                 .foregroundStyle(.yellow)
-                .padding(.bottom, 12)
         }
         .accessibilityLabel("Reset session")
         .alert("Reset Session", isPresented: $showingResetPrompt) {
