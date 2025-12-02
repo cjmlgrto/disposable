@@ -177,13 +177,12 @@ final class CameraController: NSObject, ObservableObject {
         // Choose a font size relative to image width for scalability
         let baseFontSize = max(24, image.size.width * 0.03)
         let font = UIFont.monospacedSystemFont(ofSize: baseFontSize, weight: .semibold)
-//        let font = UIFont.systemFont(ofSize: baseFontSize, weight: .semibold)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .right
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: UIColor.yellow,
+            .foregroundColor: UIColor.orange,
             .paragraphStyle: paragraph
         ]
 
@@ -204,7 +203,7 @@ final class CameraController: NSObject, ObservableObject {
             image.draw(in: CGRect(origin: .zero, size: image.size))
 
             // Shadow for legibility
-            ctx.cgContext.setShadow(offset: shadowOffset, blur: shadowBlur, color: UIColor.black.withAlphaComponent(0.6).cgColor)
+//            ctx.cgContext.setShadow(offset: shadowOffset, blur: shadowBlur, color: UIColor.black.withAlphaComponent(0.6).cgColor)
 
             // Measure text
             let textSize = (text as NSString).size(withAttributes: attributes)
@@ -215,6 +214,12 @@ final class CameraController: NSObject, ObservableObject {
                 y: image.size.height - textSize.height - padded
             )
             let textRect = CGRect(origin: textOrigin, size: textSize)
+            
+            // Apply blend mode + opacity just for the text
+            let context = ctx.cgContext
+            context.saveGState()
+            context.setBlendMode(.hardLight)
+            context.setAlpha(0.9)
 
             // Draw text
             (text as NSString).draw(in: textRect, withAttributes: attributes)
