@@ -6,12 +6,14 @@ struct FlashToggleView: View {
     var body: some View {
         Button(action: { isOn.toggle() }) {
             HStack(spacing: 8) {
+                Text("FLASH")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .blendMode(.hardLight)
+                    .opacity(0.8)
                 Circle()
                     .fill(isOn ? Color.green : Color.red)
                     .frame(width: 12, height: 12)
-                Text("Flash")
-                    .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.primary)
             }
         }
         .buttonStyle(.plain)

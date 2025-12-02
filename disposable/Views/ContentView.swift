@@ -16,19 +16,26 @@ struct ContentView: View {
             Color.black.ignoresSafeArea()
 
             VStack {
-                HStack() {
+                HStack {
                     // Reset button
-                    ResetButtonView(sessionName: $camera.sessionName, remainingShots: $camera.remainingShots, defaultShotCount: 24)
-                        .padding(24)
+                    ResetButtonView(
+                        sessionName: $camera.sessionName,
+                        remainingShots: $camera.remainingShots,
+                        defaultShotCount: 24
+                    )
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .insetContainerNeutral(cornerRadius: 48)
 
                     // Fixed spacing between reset and flash
                     Spacer()
                     
                     // Flash toggle
                     FlashToggleView(isOn: $camera.flashEnabled)
-                        .padding(24)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .insetContainerNeutral(cornerRadius: 48)
                 }
-                .background(Color.blue.opacity(0.15))
 
                 Spacer()
                 
