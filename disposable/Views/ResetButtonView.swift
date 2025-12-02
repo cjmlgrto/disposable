@@ -13,8 +13,10 @@ struct ResetButtonView: View {
             newSessionName = sessionName
             showingResetPrompt = true
         } label: {
-            Text("RESET")
+            Text("Reset")
+                .textCase(.uppercase)
                 .font(.system(.body, weight: .semibold))
+                .tracking(1.0)
                 .foregroundStyle(.white)
                 .blendMode(.hardLight)
                 .opacity(0.8)

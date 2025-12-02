@@ -6,19 +6,31 @@ struct CounterView: View {
     @State private var animateKick = false
 
     var body: some View {
-        Text("\(value)")
-            .font(.system(size: 48, weight: .bold, design: .monospaced))
-            .foregroundStyle(.yellow)
-            .modifier(NumericTextTransition(value: value))
-            .scaleEffect(animateKick ? 1.1 : 1.0)
-            .opacity(animateKick ? 0.9 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateKick)
-            .onChange(of: value) { _, _ in
-                animateKick = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    animateKick = false
-                }
+        ZStack {
+            ZStack {
+                Text("\(value)")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+                    .blendMode(.hardLight)
+                    .opacity(0.8)
+                    .modifier(NumericTextTransition(value: value))
+                    .scaleEffect(animateKick ? 1.1 : 1.0)
+                    .opacity(animateKick ? 0.9 : 1.0)
+                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateKick)
+                    .onChange(of: value) { _, _ in
+                        animateKick = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            animateKick = false
+                        }
+                    }
             }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+            .insetContainer(cornerRadius: 6)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .headerContainerStyle(cornerRadius: 12)
     }
 }
 

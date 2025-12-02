@@ -46,8 +46,8 @@ struct InsetContainerStyle: ViewModifier {
     var background: AnyShapeStyle? = nil
     var borderColor: Color = .black
     var borderWidth: CGFloat = 1
-    var dropShadows: [ShadowSpec] = [.whiteSubtle()]
-    var innerShadows: [InnerShadowSpec] = [.subtleInset()]
+    var dropShadows: [ShadowSpec] = [ShadowSpec.whiteSubtle(color: .white, radius: 2, x: 0, y: 2)]
+    var innerShadows: [InnerShadowSpec] = [InnerShadowSpec.subtleInset(color: Color.black.opacity(0.25), radius: 2, x: 0, y: 2)]
     
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -69,7 +69,7 @@ struct InsetContainerStyle: ViewModifier {
                 }
             }
             .overlay {
-                shape.strokeBorder(Color.black, lineWidth: 1)
+                shape.strokeBorder(borderColor, lineWidth: borderWidth)
             }
             .overlay {
                 ZStack {
@@ -104,46 +104,22 @@ private struct DropShadowsModifier: ViewModifier {
 
 extension View {
     func insetContainer(
-        cornerRadius: CGFloat = 14,
+        cornerRadius: CGFloat = 44,
         background: AnyShapeStyle? = nil,
-        useDefaultBackground: Bool = true,
-        borderColor: Color = .white.opacity(0.12),
+        borderColor: Color = .black,
         borderWidth: CGFloat = 1,
-        dropShadows: [ShadowSpec] = [.soft()],
-        innerShadows: [InnerShadowSpec] = []
+        dropShadows: [ShadowSpec] = [ShadowSpec.whiteSubtle(color: .white.opacity(0.15), radius: 1, x: 0, y: 1)],
+        innerShadows: [InnerShadowSpec] = [InnerShadowSpec.subtleInset(color: Color.black.opacity(0.25), radius: 2, x: 0, y: 2)]
     ) -> some View {
-        let bg: AnyShapeStyle? = useDefaultBackground ? nil : background
-        return self.modifier(
+        self.modifier(
             InsetContainerStyle(
                 cornerRadius: cornerRadius,
-                background: bg,
+                background: background,
                 borderColor: borderColor,
                 borderWidth: borderWidth,
                 dropShadows: dropShadows,
                 innerShadows: innerShadows
             )
-        )
-    }
-    
-    func insetContainerNeutral(cornerRadius: CGFloat = 44) -> some View {
-        return insetContainer(
-            cornerRadius: cornerRadius,
-            useDefaultBackground: true,
-            borderColor: .black,
-            borderWidth: 1,
-            dropShadows: [.whiteSubtle()],
-            innerShadows: [.subtleInset()]
-        )
-    }
-    
-    func insetContainerEmphasis(cornerRadius: CGFloat = 44) -> some View {
-        return insetContainer(
-            cornerRadius: cornerRadius,
-            useDefaultBackground: true,
-            borderColor: .black,
-            borderWidth: 1,
-            dropShadows: [.whiteSubtle()],
-            innerShadows: [.subtleInset()]
         )
     }
 }
@@ -196,13 +172,13 @@ struct InsetContainer<Content: View>: View {
             Button("Reset") {}
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                .insetContainerNeutral()
+                .insetContainer()
             
             Toggle(isOn: .constant(true)) {
                 Text("Enable")
             }
             .toggleStyle(.switch)
-            .insetContainerNeutral()
+            .insetContainer()
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
         }
@@ -211,13 +187,13 @@ struct InsetContainer<Content: View>: View {
             Button("Reset") {}
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                .insetContainerEmphasis()
+                .insetContainer()
             
             Toggle(isOn: .constant(false)) {
                 Text("Enable")
             }
             .toggleStyle(.switch)
-            .insetContainerEmphasis()
+            .insetContainer()
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
         }

@@ -23,19 +23,22 @@ struct ContentView: View {
                         remainingShots: $camera.remainingShots,
                         defaultShotCount: 24
                     )
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .insetContainerNeutral(cornerRadius: 48)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .insetContainer(cornerRadius: 48)
+                    
 
                     // Fixed spacing between reset and flash
                     Spacer()
                     
                     // Flash toggle
                     FlashToggleView(isOn: $camera.flashEnabled)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .insetContainerNeutral(cornerRadius: 48)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .insetContainer(cornerRadius: 48)
                 }
+                .padding(24)
+                .headerContainerStyle(cornerRadius: 0)
 
                 Spacer()
                 
@@ -45,8 +48,8 @@ struct ContentView: View {
                     
                     // Session name display
                     SessionNameView(name: camera.sessionName)
+                        .rotationEffect(.degrees(-4))
                 }
-                .background(Color.orange.opacity(0.15))
 
                 Spacer()
                 
@@ -58,11 +61,23 @@ struct ContentView: View {
                     .padding(24)
                 }
                 .frame(maxWidth: .infinity)
-                .background(Color.purple.opacity(0.15))
+                .controlsContainerStyle(cornerRadius: 0)
+                
             }
-            .background(Color.red.opacity(0.15))
+            .cameraContainerStyle(cornerRadius: 48)
+            .clipShape(RoundedRectangle(cornerRadius: 48))
             .padding(16)
             .safeAreaPadding(.top)
+            .overlay(
+                RoundedRectangle(cornerRadius: 48)
+                    .stroke(Color.black.opacity(1), lineWidth: 12)
+                    .blur(radius: 2)
+                    .mask(
+                        RoundedRectangle(cornerRadius: 48)
+                            .fill(LinearGradient(gradient: Gradient(colors: [.black, .clear]), startPoint: .top, endPoint: .bottom))
+                    )
+                    .blendMode(.overlay)
+            )
             
         }
         .task {

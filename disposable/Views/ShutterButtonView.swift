@@ -13,10 +13,12 @@ struct ShutterButtonView: View {
         } label: {
             Circle()
                 .frame(width: 80, height: 80)
-                .glassEffect()
+                .glassEffect(.clear)
                 .tint(.yellow)
         }
         .accessibilityLabel("Shutter")
+        .padding(8)
+        .insetContainer(cornerRadius: 88)
     }
 }
 
