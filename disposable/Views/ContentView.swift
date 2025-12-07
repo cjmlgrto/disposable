@@ -43,6 +43,20 @@ struct ContentView: View {
                 Spacer()
                 
                 VStack(spacing: 24) {
+                    ZStack() {
+                        // Live viewfinder
+                        CameraPreviewView(session: camera.session)
+                            .frame(width: 80, height: 58)
+                            .background(Color.black.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .insetContainer(cornerRadius: 6)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .headerContainerStyle(cornerRadius: 12)
+                    
+                    Spacer()
+                    
                     // Counter display
                     CounterView(value: camera.remainingShots)
                     
@@ -50,6 +64,7 @@ struct ContentView: View {
                     SessionNameView(name: camera.sessionName)
                         .rotationEffect(.degrees(-4))
                 }
+                .padding(.vertical, 24)
 
                 Spacer()
                 

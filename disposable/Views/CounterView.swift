@@ -7,30 +7,25 @@ struct CounterView: View {
 
     var body: some View {
         ZStack {
-            ZStack {
-                Text("\(value)")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(.white)
-                    .blendMode(.hardLight)
-                    .opacity(0.8)
-                    .modifier(NumericTextTransition(value: value))
-                    .scaleEffect(animateKick ? 1.1 : 1.0)
-                    .opacity(animateKick ? 0.9 : 1.0)
-                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateKick)
-                    .onChange(of: value) { _, _ in
-                        animateKick = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            animateKick = false
-                        }
+            Text("\(value)")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(.white)
+                .blendMode(.hardLight)
+                .opacity(0.8)
+                .modifier(NumericTextTransition(value: value))
+                .scaleEffect(animateKick ? 1.1 : 1.0)
+                .opacity(animateKick ? 0.9 : 1.0)
+                .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateKick)
+                .onChange(of: value) { _, _ in
+                    animateKick = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        animateKick = false
                     }
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
-            .insetContainer(cornerRadius: 6)
+                }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
-        .headerContainerStyle(cornerRadius: 12)
+        .insetContainer(cornerRadius: 6)
     }
 }
 
