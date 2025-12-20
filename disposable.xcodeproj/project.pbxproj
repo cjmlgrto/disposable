@@ -257,8 +257,8 @@
 				DEVELOPMENT_TEAM = G84G6PSZP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take photos";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Access photos";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera to take photos with Disposable";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Save photos with Disposable Cam";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -293,8 +293,8 @@
 				DEVELOPMENT_TEAM = G84G6PSZP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take photos";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Access photos";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera to take photos with Disposable";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Save photos with Disposable Cam";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

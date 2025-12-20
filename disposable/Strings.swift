@@ -13,30 +13,30 @@ enum Strings {
     }
     
     enum Alert {
-        static let resetSessionTitle = "Reset Session"
+        static let resetSessionTitle = "Reset Roll"
         static let permissionsRequired = "Camera and Photo Library permissions are required."
-        static let noBackCamera = "No back camera available."
+        static let noBackCamera = "Uh oh, no camera found."
     }
 
     enum Placeholder {
-        static let sessionName = "Session name"
-        static let newSessionName = "New session name"
+        static let sessionName = "Name your roll"
+        static let newSessionName = "Name your roll"
     }
 
     enum Session {
-        static let untitled = "Untitled"
-        static let new = "New Session"
-        static let namePrompt = "Name this session"
+        static let untitled = "disposable"
+        static let new = "New Roll"
+        static let namePrompt = "Name this roll"
     }
 
     enum Accessibility {
-        static let sessionNameLabel = "Session name"
-        static let resetSessionLabel = "Reset session"
+        static let sessionNameLabel = "Roll name"
+        static let resetSessionLabel = "Reset roll"
     }
 
     enum Message {
         static func resetShots(_ count: Int) -> String {
-            "This will reset remaining shots to \(count). Enter a new session name."
+            "This will reset remaining shots to \(count). Enter a new roll name."
         }
         static func saveFailed(_ reason: String) -> String {
             "Save failed: \(reason)"
