@@ -26,18 +26,34 @@ final class CameraController: NSObject, ObservableObject {
     @Published var sessionName: String {
         didSet {
             UserDefaults.standard.set(sessionName, forKey: Self.sessionNameKey)
+            // When session name changes, create or find the corresponding album
+            createSessionAlbumIfNeeded { _ in }
         }
     }
 
     private static let remainingShotsKey = "remainingShots"
     private static let sessionNameKey = "sessionName"
+    private static let albumIdentifierKey = "sessionAlbumIdentifier" // Persist album identifier
     private static let maxShots = 24
+
+    // Store current session album identifier to save photos into
+    private(set) var currentAlbumIdentifier: String? {
+        didSet {
+            // Persist the current album identifier for the session name
+            if let id = currentAlbumIdentifier {
+                UserDefaults.standard.set(id, forKey: Self.albumIdentifierKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: Self.albumIdentifierKey)
+            }
+        }
+    }
 
     override init() {
         let storedCount = UserDefaults.standard.object(forKey: Self.remainingShotsKey) as? Int
         let storedName = UserDefaults.standard.string(forKey: Self.sessionNameKey)
         self.remainingShots = storedCount ?? Self.maxShots
         self.sessionName = (storedName?.isEmpty == false) ? storedName! : Strings.Session.untitled
+        self.currentAlbumIdentifier = nil
         super.init()
         // Normalize any invalid stored values
         if remainingShots <= 0 || remainingShots > Self.maxShots {
@@ -46,6 +62,12 @@ final class CameraController: NSObject, ObservableObject {
         if sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             sessionName = Strings.Session.untitled
         }
+        // Attempt to restore persisted album identifier for current session
+        if let albumId = UserDefaults.standard.string(forKey: Self.albumIdentifierKey) {
+            self.currentAlbumIdentifier = albumId
+        }
+        // Create or find album for initial session name
+        createSessionAlbumIfNeeded { _ in }
     }
 
     func start() async {
@@ -129,8 +151,18 @@ final class CameraController: NSObject, ObservableObject {
 
     private func saveToPhotos(_ imageData: Data) {
         PHPhotoLibrary.shared().performChanges({
-            let request = PHAssetCreationRequest.forAsset()
-            request.addResource(with: .photo, data: imageData, options: nil)
+            // Create asset for the photo
+            let assetRequest = PHAssetCreationRequest.forAsset()
+            assetRequest.addResource(with: .photo, data: imageData, options: nil)
+
+            // If a current album exists, add the photo asset to that album
+            if let albumId = self.currentAlbumIdentifier,
+               let collection = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil).firstObject {
+                let addAssetRequest = PHAssetCollectionChangeRequest(for: collection)
+                if let placeholder = assetRequest.placeholderForCreatedAsset {
+                    addAssetRequest?.addAssets([placeholder] as NSArray)
+                }
+            }
         }) { success, error in
             DispatchQueue.main.async {
                 if let error = error {
@@ -241,10 +273,15 @@ final class CameraController: NSObject, ObservableObject {
         let saveAction = UIAlertAction(title: Strings.Button.save, style: .default) { [weak self] _ in
             guard let self else { return }
             let entered = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            self.sessionName = entered.isEmpty ? Strings.Session.untitled : entered
+            let newName = entered.isEmpty ? Strings.Session.untitled : entered
+            self.sessionName = newName
+            // Create or find the album for the new session name
+            self.createSessionAlbumIfNeeded { _ in }
         }
         let cancelAction = UIAlertAction(title: Strings.Button.cancel, style: .cancel) { [weak self] _ in
             self?.sessionName = Strings.Session.untitled
+            // Create or find the album for untitled session
+            self?.createSessionAlbumIfNeeded { _ in }
         }
 
         alert.addAction(cancelAction)
@@ -256,6 +293,37 @@ final class CameraController: NSObject, ObservableObject {
         } else {
             // Fallback if we cannot find a presenter
             self.sessionName = Strings.Session.untitled
+            createSessionAlbumIfNeeded { _ in }
+        }
+    }
+
+    /// Creates a photo album for the current session if it does not exist,
+    /// and sets `currentAlbumIdentifier` to its local identifier.
+    private func createSessionAlbumIfNeeded(completion: @escaping (String?) -> Void) {
+        let albumName = "Disposable: \(sessionName)"
+        // Check if album already exists
+        let fetch = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
+        if let existing = (0..<fetch.count).map({ fetch.object(at: $0) }).first(where: { $0.localizedTitle == albumName }) {
+            self.currentAlbumIdentifier = existing.localIdentifier
+            completion(existing.localIdentifier)
+            return
+        }
+        // Create new album
+        var albumPlaceholder: PHObjectPlaceholder?
+        PHPhotoLibrary.shared().performChanges({
+            let create = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumName)
+            albumPlaceholder = create.placeholderForCreatedAssetCollection
+        }) { success, error in
+            DispatchQueue.main.async {
+                if success, let id = albumPlaceholder?.localIdentifier {
+                    self.currentAlbumIdentifier = id
+                    completion(id)
+                } else {
+                    // Could not create album, clear current id to avoid stale state
+                    self.currentAlbumIdentifier = nil
+                    completion(nil)
+                }
+            }
         }
     }
 
