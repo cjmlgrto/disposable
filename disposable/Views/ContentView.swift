@@ -8,6 +8,16 @@
 import SwiftUI
 import UIKit
 
+// Helper to check first launch and mark as launched
+fileprivate func isFirstLaunch() -> Bool {
+    let key = "hasLaunchedBefore"
+    let first = !UserDefaults.standard.bool(forKey: key)
+    if first {
+        UserDefaults.standard.set(true, forKey: key)
+    }
+    return first
+}
+
 struct ContentView: View {
     @StateObject private var camera = CameraController()
 
@@ -97,6 +107,9 @@ struct ContentView: View {
         }
         .task {
             await camera.start()
+            if isFirstLaunch() {
+                await MainActor.run { camera.promptForSessionName() }
+            }
         }
         .alert(camera.errorMessage ?? "", isPresented: .constant(camera.errorMessage != nil)) {
             Button(Strings.Button.ok) { camera.errorMessage = nil }
@@ -107,3 +120,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

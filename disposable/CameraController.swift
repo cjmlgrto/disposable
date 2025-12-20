@@ -262,7 +262,7 @@ final class CameraController: NSObject, ObservableObject {
 
     // MARK: - Session naming prompt
 
-    private func promptForSessionName() {
+    func promptForSessionName() {
         let alert = UIAlertController(title: Strings.Session.new, message: Strings.Session.namePrompt, preferredStyle: .alert)
         alert.addTextField { textField in
             textField.placeholder = Strings.Session.namePrompt
