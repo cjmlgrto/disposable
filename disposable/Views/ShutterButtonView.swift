@@ -16,7 +16,7 @@ struct ShutterButtonView: View {
                 .glassEffect(.clear)
                 .tint(.yellow)
         }
-        .accessibilityLabel("Shutter")
+        .accessibilityLabel(Strings.Button.shutter)
         .padding(8)
         .insetContainer(cornerRadius: 88)
     }

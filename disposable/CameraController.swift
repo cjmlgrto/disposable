@@ -37,21 +37,21 @@ final class CameraController: NSObject, ObservableObject {
         let storedCount = UserDefaults.standard.object(forKey: Self.remainingShotsKey) as? Int
         let storedName = UserDefaults.standard.string(forKey: Self.sessionNameKey)
         self.remainingShots = storedCount ?? Self.maxShots
-        self.sessionName = (storedName?.isEmpty == false) ? storedName! : "Untitled"
+        self.sessionName = (storedName?.isEmpty == false) ? storedName! : Strings.Session.untitled
         super.init()
         // Normalize any invalid stored values
         if remainingShots <= 0 || remainingShots > Self.maxShots {
             remainingShots = Self.maxShots
         }
         if sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            sessionName = "Untitled"
+            sessionName = Strings.Session.untitled
         }
     }
 
     func start() async {
         let authorized = await requestPermissions()
         guard authorized else {
-            errorMessage = "Camera and Photo Library permissions are required."
+            errorMessage = Strings.Alert.permissionsRequired
             return
         }
 
@@ -107,7 +107,7 @@ final class CameraController: NSObject, ObservableObject {
                     self.session.sessionPreset = .photo
 
                     guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-                        throw NSError(domain: "Camera", code: 1, userInfo: [NSLocalizedDescriptionKey: "No back camera available."])
+                        throw NSError(domain: "Camera", code: 1, userInfo: [NSLocalizedDescriptionKey: Strings.Alert.noBackCamera])
                     }
                     let input = try AVCaptureDeviceInput(device: device)
                     if self.session.canAddInput(input) { self.session.addInput(input) }
@@ -134,7 +134,7 @@ final class CameraController: NSObject, ObservableObject {
         }) { success, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self.errorMessage = "Save failed: \(error.localizedDescription)"
+                    self.errorMessage = "\(Strings.Alert.noBackCamera) \(error.localizedDescription)"
                     // Optional: error haptic
                     let notifier = UINotificationFeedbackGenerator()
                     notifier.prepare()
@@ -169,7 +169,7 @@ final class CameraController: NSObject, ObservableObject {
         formatter.locale = Locale(identifier: "en_GB")
         formatter.dateFormat = "dd-MM-yyyy"
         let datePart = formatter.string(from: Date())
-        let name = sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Untitled" : sessionName
+        let name = sessionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Strings.Session.untitled : sessionName
         return "\(name) \(datePart) \(displayCount) of \(Self.maxShots)"
     }
 
@@ -231,20 +231,20 @@ final class CameraController: NSObject, ObservableObject {
     // MARK: - Session naming prompt
 
     private func promptForSessionName() {
-        let alert = UIAlertController(title: "New Session", message: "Name this session", preferredStyle: .alert)
+        let alert = UIAlertController(title: Strings.Session.new, message: Strings.Session.namePrompt, preferredStyle: .alert)
         alert.addTextField { textField in
-            textField.placeholder = "Session name"
+            textField.placeholder = Strings.Session.namePrompt
             textField.text = ""
             textField.returnKeyType = .done
         }
 
-        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+        let saveAction = UIAlertAction(title: Strings.Button.save, style: .default) { [weak self] _ in
             guard let self else { return }
             let entered = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            self.sessionName = entered.isEmpty ? "Untitled" : entered
+            self.sessionName = entered.isEmpty ? Strings.Session.untitled : entered
         }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-            self?.sessionName = "Untitled"
+        let cancelAction = UIAlertAction(title: Strings.Button.cancel, style: .cancel) { [weak self] _ in
+            self?.sessionName = Strings.Session.untitled
         }
 
         alert.addAction(cancelAction)
@@ -255,7 +255,7 @@ final class CameraController: NSObject, ObservableObject {
             presenter.present(alert, animated: true, completion: nil)
         } else {
             // Fallback if we cannot find a presenter
-            self.sessionName = "Untitled"
+            self.sessionName = Strings.Session.untitled
         }
     }
 
@@ -311,4 +311,3 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         }
     }
 }
-

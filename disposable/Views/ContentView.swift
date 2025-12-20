@@ -99,7 +99,7 @@ struct ContentView: View {
             await camera.start()
         }
         .alert(camera.errorMessage ?? "", isPresented: .constant(camera.errorMessage != nil)) {
-            Button("OK") { camera.errorMessage = nil }
+            Button(Strings.Button.ok) { camera.errorMessage = nil }
         }
     }
 }

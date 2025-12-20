@@ -3,14 +3,14 @@ import SwiftUI
 struct SessionNameView: View {
     let name: String
 
-    private var displayName: String { name.isEmpty ? "Untitled" : name }
+    private var displayName: String { name.isEmpty ? Strings.Session.untitled : name }
 
     var body: some View {
         Text(displayName)
             .textCase(.uppercase)
             .font(.system(size: 20, weight: .semibold, design: .monospaced))
             .foregroundStyle(.white)
-            .accessibilityLabel("Session name")
+            .accessibilityLabel(Strings.Accessibility.sessionNameLabel)
             .accessibilityValue(displayName)
             .shadow(radius: 1.0, y: 1.0)
             .padding(.horizontal, 24)

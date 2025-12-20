@@ -13,7 +13,7 @@ struct ResetButtonView: View {
             newSessionName = sessionName
             showingResetPrompt = true
         } label: {
-            Text("Reset")
+            Text(Strings.Button.reset)
                 .textCase(.uppercase)
                 .font(.system(.body, weight: .semibold))
                 .tracking(1.0)
@@ -21,22 +21,22 @@ struct ResetButtonView: View {
                 .blendMode(.hardLight)
                 .opacity(0.8)
         }
-        .accessibilityLabel("Reset session")
-        .alert("Reset Session", isPresented: $showingResetPrompt) {
+        .accessibilityLabel(Strings.Accessibility.resetSessionLabel)
+        .alert(Strings.Alert.resetSessionTitle, isPresented: $showingResetPrompt) {
             if #available(iOS 17.0, *) {
-                TextField("New session name", text: $newSessionName)
+                TextField(Strings.Placeholder.newSessionName, text: $newSessionName)
             }
-            Button("Cancel", role: .cancel) {
+            Button(Strings.Button.cancel, role: .cancel) {
                 newSessionName = ""
             }
-            Button("Confirm") {
+            Button(Strings.Button.confirm) {
                 remainingShots = defaultShotCount
                 let trimmed = newSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
-                sessionName = trimmed.isEmpty ? "Untitled" : trimmed
+                sessionName = trimmed.isEmpty ? Strings.Session.untitled : trimmed
                 newSessionName = ""
             }
         } message: {
-            Text("This will reset remaining shots to \(defaultShotCount). Enter a new session name.")
+            Text(String(format: Strings.Message.resetShots(defaultShotCount)))
         }
     }
 }
@@ -45,7 +45,7 @@ struct ResetButtonView: View {
     ZStack {
         Color.black.ignoresSafeArea()
         VStack(spacing: 12) {
-            ResetButtonView(sessionName: .constant("Untitled"), remainingShots: .constant(24))
+            ResetButtonView(sessionName: .constant(Strings.Session.untitled), remainingShots: .constant(24))
         }
     }
 }
