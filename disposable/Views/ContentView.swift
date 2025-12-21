@@ -20,6 +20,9 @@ fileprivate func isFirstLaunch() -> Bool {
 
 struct ContentView: View {
     @StateObject private var camera = CameraController()
+    @State private var sessionNameDraft: String = ""
+    @State private var isResetSessionPromptVisible = false
+    @State private var resetSessionNameDraft = ""
 
     var body: some View {
         ZStack {
@@ -27,16 +30,22 @@ struct ContentView: View {
 
             VStack {
                 HStack {
-                    // Reset button
-                    ResetButtonView(
-                        sessionName: $camera.sessionName,
-                        remainingShots: $camera.remainingShots,
-                        defaultShotCount: 24
-                    )
+                    Button {
+                        resetSessionNameDraft = camera.sessionName
+                        isResetSessionPromptVisible = true
+                    } label: {
+                        Text(Strings.Button.reset)
+                            .textCase(.uppercase)
+                            .font(.system(.body, weight: .semibold))
+                            .tracking(1.0)
+                            .foregroundStyle(.white)
+                            .blendMode(.hardLight)
+                            .opacity(0.8)
+                    }
+                    .accessibilityLabel(Strings.Accessibility.resetSessionLabel)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .insetContainer(cornerRadius: 48)
-                    
 
                     // Fixed spacing between reset and flash
                     Spacer()
@@ -104,7 +113,40 @@ struct ContentView: View {
                     .blendMode(.overlay)
             )
             
+            if camera.isPresentingSessionNamePrompt {
+                SessionNamePromptOverlay(
+                    text: $camera.pendingSessionName,
+                    placeholder: Strings.Placeholder.sessionName,
+                    onConfirm: {
+                        camera.confirmSessionNamePrompt()
+                    },
+                    onCancel: {
+                        camera.cancelSessionNamePrompt()
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(99)
+            }
+            
+            if isResetSessionPromptVisible {
+                SessionNamePromptOverlay(
+                    text: $resetSessionNameDraft,
+                    placeholder: Strings.Placeholder.newSessionName,
+                    onConfirm: {
+                        camera.remainingShots = 24
+                        let trimmed = resetSessionNameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                        camera.sessionName = trimmed.isEmpty ? Strings.Session.untitled : trimmed
+                        isResetSessionPromptVisible = false
+                    },
+                    onCancel: {
+                        isResetSessionPromptVisible = false
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            }
         }
+        .ignoresSafeArea(.keyboard)
         .task {
             await camera.start()
             if isFirstLaunch() {

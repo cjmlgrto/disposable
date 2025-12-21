@@ -31,6 +31,9 @@ final class CameraController: NSObject, ObservableObject {
         }
     }
 
+    @Published var isPresentingSessionNamePrompt: Bool = false
+    @Published var pendingSessionName: String = ""
+
     private static let remainingShotsKey = "remainingShots"
     private static let sessionNameKey = "sessionName"
     private static let albumIdentifierKey = "sessionAlbumIdentifier" // Persist album identifier
@@ -263,38 +266,24 @@ final class CameraController: NSObject, ObservableObject {
     // MARK: - Session naming prompt
 
     func promptForSessionName() {
-        let alert = UIAlertController(title: Strings.Session.new, message: Strings.Session.namePrompt, preferredStyle: .alert)
-        alert.addTextField { textField in
-            textField.placeholder = Strings.Session.namePrompt
-            textField.text = ""
-            textField.returnKeyType = .done
-        }
+        isPresentingSessionNamePrompt = true
+        pendingSessionName = ""
+    }
 
-        let saveAction = UIAlertAction(title: Strings.Button.save, style: .default) { [weak self] _ in
-            guard let self else { return }
-            let entered = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let newName = entered.isEmpty ? Strings.Session.untitled : entered
-            self.sessionName = newName
-            // Create or find the album for the new session name
-            self.createSessionAlbumIfNeeded { _ in }
-        }
-        let cancelAction = UIAlertAction(title: Strings.Button.cancel, style: .cancel) { [weak self] _ in
-            self?.sessionName = Strings.Session.untitled
-            // Create or find the album for untitled session
-            self?.createSessionAlbumIfNeeded { _ in }
-        }
+    /// Call when the user confirms the name in the overlay
+    func confirmSessionNamePrompt() {
+        let trimmed = pendingSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newName = trimmed.isEmpty ? Strings.Session.untitled : trimmed
+        sessionName = newName
+        isPresentingSessionNamePrompt = false
+        createSessionAlbumIfNeeded { _ in }
+    }
 
-        alert.addAction(cancelAction)
-        alert.addAction(saveAction)
-
-        // Present from the topmost view controller
-        if let presenter = self.topMostViewController() {
-            presenter.present(alert, animated: true, completion: nil)
-        } else {
-            // Fallback if we cannot find a presenter
-            self.sessionName = Strings.Session.untitled
-            createSessionAlbumIfNeeded { _ in }
-        }
+    /// Call when the user cancels
+    func cancelSessionNamePrompt() {
+        sessionName = Strings.Session.untitled
+        isPresentingSessionNamePrompt = false
+        createSessionAlbumIfNeeded { _ in }
     }
 
     /// Creates a photo album for the current session if it does not exist,
