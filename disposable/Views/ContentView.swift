@@ -32,7 +32,7 @@ struct ContentView: View {
                 HStack {
                     Button {
                         resetSessionNameDraft = camera.sessionName
-                        isResetSessionPromptVisible = true
+                        withAnimation { isResetSessionPromptVisible = true }
                     } label: {
                         Text(Strings.Button.reset)
                             .textCase(.uppercase)
@@ -133,13 +133,19 @@ struct ContentView: View {
                     text: $resetSessionNameDraft,
                     placeholder: Strings.Placeholder.newSessionName,
                     onConfirm: {
-                        camera.remainingShots = 24
-                        let trimmed = resetSessionNameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-                        camera.sessionName = trimmed.isEmpty ? Strings.Session.untitled : trimmed
-                        isResetSessionPromptVisible = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation { isResetSessionPromptVisible = false }
+                            camera.remainingShots = 24
+                            let trimmed = resetSessionNameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                            camera.sessionName = trimmed.isEmpty ? Strings.Session.untitled : trimmed
+                        }
                     },
                     onCancel: {
-                        isResetSessionPromptVisible = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation { isResetSessionPromptVisible = false }
+                        }
                     }
                 )
                 .transition(.opacity)
@@ -162,4 +168,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
