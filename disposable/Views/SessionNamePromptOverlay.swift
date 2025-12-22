@@ -91,6 +91,7 @@ struct SessionNamePromptOverlay: View {
                 Spacer()
                 confirmButton
             }
+            .padding(32)
         }
         .safeAreaPadding(.all)
         .onAppear {
