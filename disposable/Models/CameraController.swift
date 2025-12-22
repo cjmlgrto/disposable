@@ -3,12 +3,15 @@ import AVFoundation
 import Photos
 import UIKit
 import Combine
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 @MainActor
 final class CameraController: NSObject, ObservableObject {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     private let photoOutput = AVCapturePhotoOutput()
+    private let filmFilter = FunSaverFilter()
 
     @Published var errorMessage: String?
 
@@ -355,9 +358,9 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
                 await MainActor.run { self.saveToPhotos(data) } // Fallback: save original
                 return
             }
-
+            let processed = self.filmFilter.process(image: original) ?? original
             let text = await MainActor.run { self.watermarkText(for: displayCount) }
-            let watermarked = await MainActor.run { self.addWatermark(to: original, text: text) }
+            let watermarked = await MainActor.run { self.addWatermark(to: processed, text: text) }
 
             // Encode as JPEG with reasonable quality
             let finalData = watermarked.jpegData(compressionQuality: 0.9) ?? data
