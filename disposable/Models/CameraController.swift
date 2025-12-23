@@ -11,7 +11,7 @@ final class CameraController: NSObject, ObservableObject {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     private let photoOutput = AVCapturePhotoOutput()
-    private let filmFilter = FunSaverFilter()
+    private let filmFilter = PhotoFilter()
 
     @Published var errorMessage: String?
 

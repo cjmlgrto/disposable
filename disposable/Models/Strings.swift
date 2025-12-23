@@ -19,14 +19,14 @@ enum Strings {
     }
 
     enum Placeholder {
-        static let sessionName = "Name your roll"
-        static let newSessionName = "Name your roll"
+        static let sessionName = "New Roll"
+        static let newSessionName = "New Roll"
     }
 
     enum Session {
         static let untitled = "disposable"
         static let new = "New Roll"
-        static let namePrompt = "Name this roll"
+        static let namePrompt = "New Roll"
     }
 
     enum Accessibility {

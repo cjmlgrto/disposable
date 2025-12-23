@@ -4,7 +4,7 @@ import CoreImage
 import CoreImage.CIFilterBuiltins
 import UIKit
 
-final class FunSaverFilter {
+final class PhotoFilter {
     private let context = CIContext()
 
     func apply(to input: CIImage) -> CIImage {
@@ -13,19 +13,19 @@ final class FunSaverFilter {
         // 1) Exposure + saturation (Gold 400 vibe)
         let colorControls = CIFilter.colorControls()
         colorControls.inputImage = img
-        colorControls.saturation = 1.18
-        colorControls.contrast = 1.10
-        colorControls.brightness = 0.03
+        colorControls.saturation = 1.0
+        colorControls.contrast = 0.90
+        colorControls.brightness = 0.01
         img = colorControls.outputImage ?? img
 
-        // 2) Tone curve (lift blacks, protect highlights)
+        // 2) Strong matte blacks + gentle highlight roll-off
         let toneCurve = CIFilter.toneCurve()
         toneCurve.inputImage = img
-        toneCurve.point0 = CGPoint(x: 0.00, y: 0.05) // lifted blacks
-        toneCurve.point1 = CGPoint(x: 0.25, y: 0.28)
-        toneCurve.point2 = CGPoint(x: 0.50, y: 0.55)
+        toneCurve.point0 = CGPoint(x: 0.00, y: 0.11)
+        toneCurve.point1 = CGPoint(x: 0.25, y: 0.31)
+        toneCurve.point2 = CGPoint(x: 0.50, y: 0.57)
         toneCurve.point3 = CGPoint(x: 0.75, y: 0.83)
-        toneCurve.point4 = CGPoint(x: 1.00, y: 0.97) // soft highlights
+        toneCurve.point4 = CGPoint(x: 1.00, y: 0.97)
         img = toneCurve.outputImage ?? img
 
         // 3) Warm bias (yellow/red lean)
@@ -38,22 +38,35 @@ final class FunSaverFilter {
         // 4) Subtle color cross-talk (greens + reds pop)
         let colorMatrix = CIFilter.colorMatrix()
         colorMatrix.inputImage = img
-        colorMatrix.rVector = CIVector(x: 1.05, y: 0.02, z: 0.00, w: 0)
+        colorMatrix.rVector = CIVector(x: 1.00, y: 0.00, z: 0.00, w: 0)
         colorMatrix.gVector = CIVector(x: 0.00, y: 1.02, z: 0.00, w: 0)
-        colorMatrix.bVector = CIVector(x: 0.00, y: 0.00, z: 0.96, w: 0)
+        colorMatrix.bVector = CIVector(x: 0.00, y: 0.05, z: 0.96, w: 0)
         colorMatrix.aVector = CIVector(x: 0, y: 0, z: 0, w: 1)
         img = colorMatrix.outputImage ?? img
 
         // 5) Grain (cheap 35mm feel)
+        let grainIntensity: CGFloat = 0.3 // Adjust this value between 0 (no grain) and 1 (full grain)
+        
         if let noise = CIFilter.randomGenerator().outputImage?.cropped(to: img.extent) {
             let grainControls = CIFilter.colorControls()
             grainControls.inputImage = noise
             grainControls.saturation = 0
-            grainControls.contrast = 1.1
+            grainControls.contrast = 1.0
             grainControls.brightness = -0.1
+            let grainImage = grainControls.outputImage ?? noise
+
+            // Blend the grain using a custom intensity (opacity) by scaling alpha via a color matrix
+            let grainAlphaMatrix = CIFilter.colorMatrix()
+            grainAlphaMatrix.inputImage = grainImage
+            grainAlphaMatrix.rVector = CIVector(x: 1, y: 0, z: 0, w: 0)
+            grainAlphaMatrix.gVector = CIVector(x: 0, y: 1, z: 0, w: 0)
+            grainAlphaMatrix.bVector = CIVector(x: 0, y: 0, z: 1, w: 0)
+            // Scale alpha by grainIntensity
+            grainAlphaMatrix.aVector = CIVector(x: 0, y: 0, z: 0, w: grainIntensity)
+            let fadedGrain = grainAlphaMatrix.outputImage ?? grainImage
 
             let blend = CIFilter.overlayBlendMode()
-            blend.inputImage = grainControls.outputImage
+            blend.inputImage = fadedGrain
             blend.backgroundImage = img
             img = blend.outputImage ?? img
         }
